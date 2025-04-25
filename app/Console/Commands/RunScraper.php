@@ -19,7 +19,13 @@ class RunScraper extends Command
         $process->setTimeout(3000);
 
         try {
-            $process->run();
+            $process->run(function ($type, $buffer) {
+                if (Process::ERR === $type) {
+                    $this->error($buffer);
+                } else {
+                    $this->info($buffer);
+                }
+            });
 
             if (!$process->isSuccessful()) {
                 throw new ProcessFailedException($process);

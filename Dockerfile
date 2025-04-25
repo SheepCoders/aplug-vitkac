@@ -1,14 +1,35 @@
-FROM php:8.3-fpm-alpine3.20
+FROM php:8.3-fpm
 
-RUN apk update && apk add --no-cache \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    mysql-client \
+RUN apt update && apt install -y \
+    chromium \
     python3 \
-    py3-pip \
-    && docker-php-ext-install pdo pdo_mysql \
+    python3-pip \
+    python3-venv \
+    curl \
+    unzip \
+    ca-certificates \
+    git \
+    bash \
+    wget \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    default-mysql-client \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
+    libnss3 \
+    libxss1 \
+    fonts-liberation \
+    && apt clean
+
+RUN docker-php-ext-install pdo pdo_mysql zip gd \
     && docker-php-ext-enable pdo_mysql
 
 WORKDIR /var/www
