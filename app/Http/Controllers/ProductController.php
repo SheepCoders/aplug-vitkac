@@ -11,11 +11,24 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $this->getAvailableFilters();
+        $filters = $this->getAvailableFilters($request);
 
-        $products = $this->getProductsFromCSV($request, $filters);
+        $products = collect($this->getProductsFromCSV($request, $filters));
 
-        return view('products.index', compact('products', 'filters'));
+        $perPage = 20;
+        $page = request()->get('page', 1);
+        $paginatedProducts = new \Illuminate\Pagination\LengthAwarePaginator(
+            $products->forPage($page, $perPage),
+            $products->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('products.index', [
+            'products' => $paginatedProducts,
+            'filters' => $filters,
+        ]);
     }
 
     public function sendToShopify($productId)
@@ -28,7 +41,7 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Product sent to Shopify!');
     }
 
-    private function getAvailableFilters()
+    private function getAvailableFilters(Request $request = null)
     {
         $csvFiles = Storage::files($this->csvDirectory);
 
@@ -41,6 +54,10 @@ class ProductController extends Controller
 
             if (!in_array($gender, $genderOptions)) {
                 $genderOptions[] = $gender;
+            }
+
+            if ($request && $request->has('gender') && $request->gender !== $gender) {
+                continue;
             }
 
             if (!in_array($category, $categoryOptions)) {
@@ -85,6 +102,13 @@ class ProductController extends Controller
                 $product['gender'] = $gender;
                 $product['images'] = json_decode(str_replace("'", '"', $product['additional_images']), true);
 
+                if ($request && $request->filled('search')) {
+                    $search = strtolower($request->search);
+                    if (strpos(strtolower($product['name']), $search) === false) {
+                        continue;
+                    }
+                }
+
                 if (!is_array($product['images'])) {
                     $product['images'] = [];
                 }
@@ -96,6 +120,13 @@ class ProductController extends Controller
         return $products;
     }
 
+    public function getCategories(Request $request)
+    {
+        $gender = $request->input('gender');
+        $filters = $this->getAvailableFilters($request);
+
+        return response()->json($filters['category']);
+    }
 
     private function extractCategoryFromFilename($filename)
     {
