@@ -142,7 +142,7 @@ def save_to_csv(products, category_id, section_name):
         print(f"No products to save for category {category_id}.")
         return
 
-    folder_path = '/var/www/storage/app/private/products'
+    folder_path = '/var/www/aplug-vitkac/storage/app/private/products'
     os.makedirs(folder_path, exist_ok=True)
     filename = os.path.join(folder_path, f'{section_name}_category_{category_id}.csv')
     df = pd.DataFrame(products)
