@@ -15,7 +15,10 @@ class RunScraper extends Command
     {
         $this->info('Running the Python scraper...');
 
-        $process = new Process(['python3', '/var/www/aplug-vitkac/python-scripts/scrape_vitkac.py']);
+        $process = new Process([
+            '/var/www/aplug-vitkac/venv/bin/python3',
+            '/var/www/aplug-vitkac/python-scripts/scrape_vitkac.py'
+        ]);        
         $process->setTimeout(3000);
 
         try {
